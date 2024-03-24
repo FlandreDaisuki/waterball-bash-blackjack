@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# curl 'http://localhost/api/post-echo' -X POST \
+#   -H "Content-Type: application/json" \
+#   --data-raw '{
+#     "roomId":"room_385abe92e39a3",
+#     "players":[
+#       {"id":"6497f6f226b40d440b9a90cc","nickname":"板橋金城武"},
+#       {"id":"6498112b26b40d440b9a90ce","nickname":"三重彭于晏"},
+#       {"id":"6499df157fed0c21a4fd0425","nickname":"蘆洲劉德華"},
+#       {"id":"649836ed7fed0c21a4fd0423","nickname":"永和周杰倫"}
+#     ]}'
+
+echo "Status: 200"
+echo ""
+
+IFS='' read -r -N "${CONTENT_LENGTH}" PAYLOAD </dev/stdin
+echo "========"
+echo "${PAYLOAD}"
+echo "========"
+env
+echo "========"
+
+exit 0
