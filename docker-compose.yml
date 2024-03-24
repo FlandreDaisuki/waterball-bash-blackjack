@@ -1,0 +1,9 @@
+services:
+  waterball-bash-blackjack:
+    image: flandre/waterball-bash-blackjack
+    build: .
+    container_name: waterball-bash-blackjack
+    volumes:
+      - ./docker-entrypoint.d:/docker-entrypoint.d:ro
+      - ./nginx/conf.d/waterball-bash-blackjack.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./apis:/app/apis

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo 'Status: 200'
+echo ''
+# env
+
+exit 0
