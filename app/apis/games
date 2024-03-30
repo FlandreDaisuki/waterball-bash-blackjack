@@ -2,40 +2,11 @@
 
 [ -x "../utils.sh" ] && source "../utils.sh"
 
-# player := {
-#   "id": "0a0a0a0a0a0a0a0a0a0a0a0a",
-#   "nickname": "ABCDE",
-#   "chips": 100,
-#   "cards": [],
-# }
-
-# game_state := {
-#   "i": 0,     // global counter
-#   "turn": 0,  // turn to bet, 0 = player[0], 5 = dealer
-#   "round": 1, // round for games, max to 10 or else?
-#   "deck": int[],
-#   "players": player[],
-#   "dealer": {cards: []}
-# }
-
-function init_game_state {
-  jq -ncr \
-    --argjson DECK "$(new_shuffled_deck)" \
-    --argjson PLAYERS "$(init_players_from_payload "${REQUEST_PAYLOAD}")" \
-    '{
-      i: 0,
-      turn: 0,
-      round: 1,
-      deck: $DECK,
-      players: $PLAYERS,
-      dealer: {cards: []}
-    }'
-}
-
 IFS='' read -r -N "${CONTENT_LENGTH}" REQUEST_PAYLOAD </dev/stdin
 
 ROOM_ID="$(echo "${REQUEST_PAYLOAD}" | jq -cr '.roomId')"
-INSERT_STAT="INSERT INTO games (room_id, game_state) VALUES ('${ROOM_ID}', '$(init_game_state)');"
+GAME_STATE="$(init_game "${REQUEST_PAYLOAD}")"
+INSERT_STAT="INSERT INTO games (room_id, game_state) VALUES ('${ROOM_ID}', '${GAME_STATE}');"
 sqlite3 "${SQLITE3_FILE}" "${INSERT_STAT}"
 
 SQL_RESULT="$?"

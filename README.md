@@ -1,5 +1,43 @@
 # waterball-bash-blackjack
 
+## Game flow
+
+```mermaid
+graph TB
+    NG((New Game)) --> IG[Init Game]
+    IG --> IR[Init Round]
+    IR --> T0[Player0 turn]
+
+    T0 --> D00[[Bet? Surrender?]]
+    D00 --> D01{Hit? Stand?}
+    D01 --> D01
+    D01 --> T1[Player1 turn]
+
+    T1 --> D10[[Bet? Surrender?]]
+    D10 --> D11{Hit? Stand?}
+    D11 --> D11
+    D11 --> T2[Player2 turn]
+
+    T2 --> D20[[Bet? Surrender?]]
+    D20 --> D21{Hit? Stand?}
+    D21 --> D21
+    D21 --> T3[Player3 turn]
+
+    T3 --> D30[[Bet? Surrender?]]
+    D30 --> D31{Hit? Stand?}
+    D31 --> D31
+    D31 --> TD[Dealer turn]
+
+    TD --> DD0{Hit? Stand?}
+    DD0 --> DD0
+    DD0 --> TDE[Show dealer's card]
+
+    TDE --> S[Settling]
+    S --> DEG{Should End Game}
+    DEG -- Y --> EG((End Game))
+    DEG -- N --> IR
+```
+
 ## APIs
 
 ### `/api/games`
