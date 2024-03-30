@@ -1,7 +1,9 @@
 services:
   waterball-bash-blackjack:
-    image: flandre/waterball-bash-blackjack
-    build: .
+    image: ghcr.io/flandredaisuki/waterball-bash-blackjack-backend
+    build:
+      dockerfile: docker/backend.Dockerfile
+      context: .
     container_name: waterball-bash-blackjack
     environment:
       - SQLITE3_FILE=/app/db.sqlite3
