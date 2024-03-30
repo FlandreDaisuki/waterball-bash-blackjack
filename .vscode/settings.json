@@ -1,5 +1,8 @@
 {
   "cSpell.words": [
     "waterball"
+  ],
+  "shellcheck.customArgs": [
+    "--external-sources=true"
   ]
 }

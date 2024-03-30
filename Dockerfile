@@ -6,5 +6,6 @@ RUN mkdir -p /app/apis \
   && apk add --no-cache \
     jq \
     bash \
+    sqlite \
     tzdata \
     fcgiwrap
