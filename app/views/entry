@@ -1,0 +1,14 @@
+#!/bin/bash
+
+[ -x "../utils.sh" ] && source "../utils.sh"
+
+echo 'Status: 200'
+echo ''
+
+if is_browser_user_agent "${HTTP_USER_AGENT}"; then
+  cat frontend.html
+else
+  cat frontend.sh
+fi
+
+exit 0
