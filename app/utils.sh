@@ -105,6 +105,23 @@ function is_game_id_pattern {
   echo "${1}" | grep -q '^[0-9]\+$'
 }
 
+# usage: is_game_global_counter_pattern "${REQUEST_QUERY_I}"
+function is_game_global_counter_pattern {
+  echo "${1}" | grep -q '^-\?[0-9]\+$'
+}
+
+# usage: get_game_global_counter "${GAME_STATE}"
+# @returns integer
+function get_game_global_counter {
+  local CURRENT_I
+  CURRENT_I="$(echo "${1}" | jq -rc '.i')"
+  if is_game_global_counter_pattern "${CURRENT_I}"; then
+    echo "${CURRENT_I}"
+  else
+    echo '-1'
+  fi
+}
+
 function echo_err {
   # REF: https://stackoverflow.com/a/2990533
   printf "%s\n" "$*" >&2

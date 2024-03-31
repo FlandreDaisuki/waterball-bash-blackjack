@@ -5,7 +5,6 @@
 if [ "${REQUEST_METHOD}" == 'GET' ]; then
 
   GAME_ID="$(get_game_id_from_uri "${REQUEST_URI}")"
-  echo_err "GAME_ID=${GAME_ID}"
   if ! is_game_id_pattern "${GAME_ID}"; then
     echo 'Status: 404'
     echo ''
@@ -24,7 +23,31 @@ if [ "${REQUEST_METHOD}" == 'GET' ]; then
     exit -1
   fi
 
+  REQUEST_QUERY_I="$(find_uri_query "${REQUEST_URI}" 'i')"
+  if ! is_game_global_counter_pattern "${REQUEST_QUERY_I}"; then
+    echo 'Status: 400'
+    echo ''
+    jq -nrc '{error_type: "query", error_code: 0}'
+    exit -1
+  fi
+
   MATCHED_GAME_STATE="$(echo "${QUERIED_RESULT}" | jq -cr 'first | .game_state')"
+  CURRENT_I="$(get_game_global_counter "${MATCHED_GAME_STATE}")"
+
+  if [ "${CURRENT_I}" -le "${REQUEST_QUERY_I}" ]; then
+    # NOTE: timeout & race mechanism
+    sleep 20 &
+    SLEEP_PID=$!
+    trap "kill ${SLGAME_STATEEEP_PID}" 'SIGRTMIN+2'
+    wait "${SLEEP_PID}"
+  else
+    RUNNING_GAME_CGI_PIDS=("$(ps a | grep '/bin/bash /app/apis/games' | cut -d' ' -f 1)")
+    for RUNNING_GAME_CGI_PID in "${RUNNING_GAME_CGI_PIDS[@]}"; do
+      if [ -n "${RUNNING_GAME_CGI_PID}" ]; then
+        kill -s 'SIGRTMIN+2' "${RUNNING_GAME_CGI_PID}"
+      fi
+    done
+  fi
 
   echo 'Status: 200'
   echo ''

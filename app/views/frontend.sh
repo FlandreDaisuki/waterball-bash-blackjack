@@ -47,6 +47,25 @@ function get_parent_pid {
 }
 export -f get_parent_pid
 
+# usage: is_game_global_counter_pattern "${REQUEST_QUERY_I}"
+function is_game_global_counter_pattern {
+  echo "${1}" | grep -q '^-\?[0-9]\+$'
+}
+export -f is_game_global_counter_pattern
+
+# usage: get_game_global_counter "${GAME_STATE}"
+# @returns integer
+function get_game_global_counter {
+  local CURRENT_I
+  CURRENT_I="$(echo "${1}" | jq -rc '.i')"
+  if is_game_global_counter_pattern "${CURRENT_I}"; then
+    echo "${CURRENT_I}"
+  else
+    echo '-1'
+  fi
+}
+export -f get_game_global_counter
+
 # usage: should_update_game_state "${NEW_GAME_STATE}"
 function should_update_game_state {
   if [ -z "${GAME_STATE}" ]; then
@@ -54,8 +73,8 @@ function should_update_game_state {
   fi
 
   NEW_GAME_STATE="${1}"
-  CURRENT_I="$(echo "${GAME_STATE}" | jq -cr '.i')"
-  NEW_I="$(echo "${NEW_GAME_STATE}" | jq -cr '.i')"
+  CURRENT_I="$(get_game_global_counter "${GAME_STATE}")"
+  NEW_I="$(get_game_global_counter "${NEW_GAME_STATE}")"
 
   if [ "${CURRENT_I}" != "${NEW_I}" ]; then
     return 0
@@ -70,16 +89,21 @@ function update_game_state {
 }
 
 function bg_long_polling_game_state {
-  NEW_GAME_STATE="$(
-    curl -sL "${BACKEND_BASE_URI}/games/${GAME_ID}" \
-      -H "Authorization: Bearer ${JWT_TOKEN}"
-  )"
+  local CURRENT_I
+  while true; do
+    CURRENT_I="$(get_game_global_counter "${GAME_STATE}")"
 
-  if should_update_game_state "${NEW_GAME_STATE}"; then
-    echo "${NEW_GAME_STATE}" | tee "${GAME_STATE_PATH}"
-    update_game_state
-    kill -s "${UPDATE_SIG}" "$(get_parent_pid)"
-  fi
+    NEW_GAME_STATE="$(
+      curl -sL "${BACKEND_BASE_URI}/games/${GAME_ID}?i=${CURRENT_I}" \
+        -H "Authorization: Bearer ${JWT_TOKEN}"
+    )"
+
+    if should_update_game_state "${NEW_GAME_STATE}"; then
+      echo "${NEW_GAME_STATE}" | tee "${GAME_STATE_PATH}"
+      update_game_state
+      kill -s "${UPDATE_SIG}" "$(get_parent_pid)"
+    fi
+  done
 }
 
 #endregion functions
