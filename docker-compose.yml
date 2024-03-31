@@ -4,9 +4,13 @@ services:
     build:
       dockerfile: docker/backend.Dockerfile
       context: .
+    ports:
+      - ${EXPOSE_PORT}:80
     container_name: waterball-bash-blackjack
     environment:
       - SQLITE3_FILE=/app/db.sqlite3
+      - BACKEND_BASE_URI=${BACKEND_BASE_URI}
+      - FRONTEND_BASE_URI=${FRONTEND_BASE_URI}
     volumes:
       - ./docker-entrypoint.d:/docker-entrypoint.d:ro
       - ./nginx/conf.d/waterball-bash-blackjack.conf:/etc/nginx/conf.d/default.conf:ro

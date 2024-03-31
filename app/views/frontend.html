@@ -7,5 +7,10 @@
 </head>
 <body>
   <h1>Welcome to Waterball Bash Blackjack!</h1>
+  <h2>To play game by your terminal, you can paste and run following command:</h2>
+  <pre><code id="shell-command"></code></pre>
+  <script>
+    document.getElementById('shell-command').textContent = `curl -sL ${location} | bash`;
+  </script>
 </body>
 </html>

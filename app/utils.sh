@@ -14,8 +14,14 @@ function init_round {
   GAME_STATE="${1}"
   GAME_STATE="$(echo "${GAME_STATE}" | jq -cr '.round+=1')"
   GAME_STATE="$(echo "${GAME_STATE}" | jq -cr '.turn=0')"
+
   GAME_STATE="$(echo "${GAME_STATE}" | jq -cr '.dealer.cards += [.deck[0]] | .deck = .deck[1:]')"
   PLAYERS_COUNT_INDEX="$(echo "${GAME_STATE}" | jq -cr '.players | length | . - 1')"
+  for PC in $(seq 0 "${PLAYERS_COUNT_INDEX}"); do
+    GAME_STATE="$(echo "${GAME_STATE}" | jq -cr ".players[${PC}].cards += [.deck[0]] | .deck = .deck[1:]")"
+  done
+
+  GAME_STATE="$(echo "${GAME_STATE}" | jq -cr '.dealer.cards += [.deck[0]] | .deck = .deck[1:]')"
   for PC in $(seq 0 "${PLAYERS_COUNT_INDEX}"); do
     GAME_STATE="$(echo "${GAME_STATE}" | jq -cr ".players[${PC}].cards += [.deck[0]] | .deck = .deck[1:]")"
   done
@@ -57,7 +63,49 @@ function init_game {
   init_round "${GAME_STATE}"
 }
 
+# usage: transform_game_state_to_player "${GAME_STATE}"
+function transform_game_state_to_player {
+  # TODO: settle step will not hide
+  GAME_STATE="${1}"
+  echo "${GAME_STATE}" | jq -rc 'del(.deck) | .dealer.cards[0] = -1'
+}
+
 # usage: is_browser_user_agent "${USER_AGENT}"
 function is_browser_user_agent {
   echo "${1}" | grep -q 'Mozilla'
+}
+
+# usage: find_uri_query "${URI_QUERY}" "${NAME}"
+# URI_QUERY := [[/path]?]a=b&foo=bar
+function find_uri_query {
+  echo "${1}" | jq -Rcr \
+    --arg PREFIX "${2}=" \
+    'split("?")
+      | last
+      | split("&")
+      | map(select(startswith($PREFIX)))
+      | first
+      | ltrimstr($PREFIX)
+      // ""
+    '
+}
+
+# usage: get_game_id_from_uri "${REQUEST_URI}"
+function get_game_id_from_uri {
+  echo "${1}" | sed -E s'|/[a-z]+/games/([0-9]+).*|\1|'
+}
+
+# usage: is_jwt_token_pattern "${JWT_TOKEN}"
+function is_jwt_token_pattern {
+  echo "${1}" | grep -q '^eyJ[a-zA-Z0-9.]\+$'
+}
+
+# usage: is_game_id_pattern "${GAME_ID}"
+function is_game_id_pattern {
+  echo "${1}" | grep -q '^[0-9]\+$'
+}
+
+function echo_err {
+  # REF: https://stackoverflow.com/a/2990533
+  printf "%s\n" "$*" >&2
 }

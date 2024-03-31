@@ -5,10 +5,23 @@
 echo 'Status: 200'
 echo ''
 
+JWT_TOKEN="$(find_uri_query "${REQUEST_URI}" 'token')"
+if ! is_jwt_token_pattern "${JWT_TOKEN}"; then
+  JWT_TOKEN=''
+fi
+
+GAME_ID="$(get_game_id_from_uri "${REQUEST_URI}")"
+if ! is_game_id_pattern "${GAME_ID}"; then
+  GAME_ID=''
+fi
+
 if is_browser_user_agent "${HTTP_USER_AGENT}"; then
   cat frontend.html
 else
-  cat frontend.sh
+  cat frontend.sh |
+    sed "s|GAME_ID=|GAME_ID='${GAME_ID}'|" |
+    sed "s|JWT_TOKEN=|JWT_TOKEN='${JWT_TOKEN}'|" |
+    sed "s|BACKEND_BASE_URI=|BACKEND_BASE_URI='${BACKEND_BASE_URI}'|"
 fi
 
 exit 0
