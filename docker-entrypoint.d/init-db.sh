@@ -11,3 +11,4 @@ CREATE TABLE IF NOT EXISTS games (
 EOF
 
 sqlite3 "${SQLITE3_FILE}" "${CREATE_STAT}"
+chown user:user "${SQLITE3_FILE}"
